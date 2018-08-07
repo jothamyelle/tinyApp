@@ -36,10 +36,10 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 app.post("/urls", (req, res) => {
-  res.send("Ok");
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  console.log(urlDatabase);
+  res.statusCode = 302;
+  res.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
 
 app.listen(PORT, () => {
