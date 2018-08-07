@@ -36,8 +36,10 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 app.post("/urls", (req, res) => {
-  console.log(req.body);
   res.send("Ok");
+  let shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  console.log(urlDatabase);
 });
 
 app.listen(PORT, () => {
@@ -46,9 +48,9 @@ app.listen(PORT, () => {
 
 function generateRandomString() {
   let output = "";
-  let letters = "abcdefghijklmnopqrstuvwxyz";
+  let letters = "abcdefghijklmnopqrstuvwxyz123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   for (let i = 0; i < 6; i++) {
-    let letterNum =  letters.charAt(Math.floor(Math.random() * letters.length));
+    let letterNum = letters.charAt(Math.floor(Math.random() * letters.length));
     output += letterNum;
   }
   return output;
