@@ -10,7 +10,13 @@
   </header>
     <ul>
       <% for (let url in urls) { %>
-      <li><%- url %>: <%- urls[url] %> <a href="#">[Shorten this Link]</a></li>
+      <li style="margin-bottom:20px;">
+        <form method="POST" action="/urls/<%- url %>/delete">
+          <%- url %>: <%- urls[url] %> 
+          <button style="border-radius:20px;"><a href="#" style="text-decoration:none;color:black;">Shorten this Link</a></button>
+          <input type="submit" value="Delete" style="border-radius:20px;cursor:pointer;"/>
+        </form>
+      </li>
       <% } %>
     </ul>
 </body>

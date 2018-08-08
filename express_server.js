@@ -80,6 +80,13 @@ app.post("/urls", (req, res) => {
   res.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
 
+// deletes a url based on the short url entered 
+// in the path, then redirects back to the urls page
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect(`http://localhost:8080/urls`);
+});
+
 // creates the server at the given port on the localhost
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
