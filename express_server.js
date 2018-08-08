@@ -1,55 +1,15 @@
+// import the goods (express) and set important variables
 var express = require("express");
-var app = express();
+var app = express(); // store the express app in a variable for convenience
 var PORT = 8080; // default port 8080
-
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
-// listening for urls
-app.get("/", (req, res) => {
-  res.end("Hello!");
-});
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-app.get("/hello", (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
-});
-app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
-  res.render("urls_index", templateVars);
-});
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
-});
-app.get("/urls/:id", (req, res) => {
-  let templateVars = { 
-    shortURL: req.params.id,
-    longURL: urlDatabase[[req.params.id]]
-  };
-  res.render("urls_show", templateVars);
-});
-app.post("/urls", (req, res) => {
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.statusCode = 301;
-  res.redirect(`http://localhost:8080/urls/${shortURL}`);
-});
-app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
-});
-
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
+/*****************************************************
+* generateRandomString: generates a random string from
+* a list of letters and numbers
+******************************************************/
 function generateRandomString() {
   let output = "";
   let letters = "abcdefghijklmnopqrstuvwxyz123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -59,3 +19,68 @@ function generateRandomString() {
   }
   return output;
 }
+
+// temporary object representing a database
+var urlDatabase = {
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com"
+};
+
+// listening for/handling routes
+app.get("/", (req, res) => {
+  // root greeting message
+  res.end("Hello!");
+});
+
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+app.get("/hello", (req, res) => {
+  res.end("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+app.get("/urls", (req, res) => {
+  // passes in the entire object, that contains
+  // the whole database object as the key value
+  let templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
+});
+
+// renders the new url form page
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+// renders the page that shows the short and long 
+// url according to the short url given in the path
+app.get("/urls/:id", (req, res) => {
+  let templateVars = { 
+    shortURL: req.params.id,
+    longURL: urlDatabase[[req.params.id]]
+  };
+  res.render("urls_show", templateVars);
+});
+
+// creates a short URL, adds it to the database
+// with the corresponding long url as the value
+app.post("/urls", (req, res) => {
+  let shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  res.statusCode = 303;
+  res.redirect(`http://localhost:8080/urls/${shortURL}`);
+});
+
+// take the short url and redirects the user to the long
+// url it corresponds to in the database
+app.get("/u/:shortURL", (req, res) => {
+  let longURL = urlDatabase[req.params.shortURL];
+  // TODO error check to see if URL contains protocol
+  res.statusCode = 301;
+  res.redirect(longURL);
+});
+
+// creates the server at the given port on the localhost
+app.listen(PORT, () => {
+  console.log(`TinyApp listening on port ${PORT}!`);
+});
