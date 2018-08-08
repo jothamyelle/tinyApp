@@ -38,8 +38,12 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  res.statusCode = 302;
+  res.statusCode = 301;
   res.redirect(`http://localhost:8080/urls/${shortURL}`);
+});
+app.get("/u/:shortURL", (req, res) => {
+  let longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
 });
 
 app.listen(PORT, () => {
