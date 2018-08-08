@@ -114,6 +114,18 @@ app.post("/register", (req, res) => {
     email: req.body.email,
     password: req.body.password
   };
+  if (user.email === "" || user.password === "") {
+    res.statusCode = 400;
+    res.send(res.statusCode + ": Username or Password field left blank.");
+    return;
+  }
+  for (checkUser in users) {
+    if (user.email === users[checkUser].email) {
+      res.statusCode = 400;
+      res.send(res.statusCode + ": Email already exists.");
+      return;
+    }
+   }
   users[userID] = user;
   res.cookie('userID', userID);
   res.redirect(`http://localhost:8080/urls`);
