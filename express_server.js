@@ -62,15 +62,6 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-// creates a short URL, adds it to the database
-// with the corresponding long url as the value
-app.post("/urls", (req, res) => {
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.statusCode = 303;
-  res.redirect(`http://localhost:8080/urls/${shortURL}`);
-});
-
 // take the short url and redirects the user to the long
 // url it corresponds to in the database
 app.get("/u/:shortURL", (req, res) => {
@@ -78,6 +69,15 @@ app.get("/u/:shortURL", (req, res) => {
   // TODO error check to see if URL contains protocol
   res.statusCode = 301;
   res.redirect(longURL);
+});
+
+// creates a short URL, adds it to the database
+// with the corresponding long url as the value
+app.post("/urls", (req, res) => {
+  let shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  res.statusCode = 303;
+  res.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
 
 // creates the server at the given port on the localhost
