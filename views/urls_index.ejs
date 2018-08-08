@@ -11,13 +11,14 @@
     <ul>
       <% for (let url in urls) { %>
       <li style="margin-bottom:20px;">
-        <form method="POST" action="/urls/<%- url %>/delete">
+        <form method="POST">
           <%- url %>: <%- urls[url] %> 
-          <button style="border-radius:20px;"><a href="#" style="text-decoration:none;color:black;">Shorten this Link</a></button>
-          <input type="submit" value="Delete" style="border-radius:20px;cursor:pointer;"/>
+          <input formaction="/urls/<%- url %>/update" type="submit" value="Edit" style="border-radius:20px;cursor:pointer;color:blue;"/>
+          <input formaction="/urls/<%- url %>/delete" type="submit" value="Delete" style="border-radius:20px;cursor:pointer;color:red;"/>
         </form>
       </li>
       <% } %>
     </ul>
-</body>
+    <button style="border-radius:20px;"><a href="/urls/new" style="text-decoration:none;color:black;">Shorten a New Link</a></button>
+  </body>
 </html>

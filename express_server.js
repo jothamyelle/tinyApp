@@ -87,6 +87,17 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect(`http://localhost:8080/urls`);
 });
 
+// updates the long url of the specified short url
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[req.params.id] = req.body.longURL;
+  res.redirect(`http://localhost:8080/urls`);
+});
+
+// links to the update page with the correct short url
+app.post("/urls/:id/update", (req, res) => {
+  res.redirect(`http://localhost:8080/urls/${req.params.id}`);
+});
+
 // creates the server at the given port on the localhost
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
