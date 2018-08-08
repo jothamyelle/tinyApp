@@ -45,13 +45,19 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   // passes in the entire object, that contains
   // the whole database object as the key value
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { 
+    urls: urlDatabase,
+    username: req.cookies["username"] 
+  };
   res.render("urls_index", templateVars);
 });
 
 // renders the new url form page
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = { 
+    username: req.cookies["username"] 
+  };
+  res.render("urls_new", templateVars);
 });
 
 // renders the page that shows the short and long 
@@ -59,7 +65,8 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = { 
     shortURL: req.params.id,
-    longURL: urlDatabase[[req.params.id]]
+    longURL: urlDatabase[[req.params.id]],
+    username: req.cookies["username"]
   };
   res.render("urls_show", templateVars);
 });
@@ -98,6 +105,18 @@ app.post("/urls/:id", (req, res) => {
 // links to the update page with the correct short url
 app.post("/urls/:id/update", (req, res) => {
   res.redirect(`http://localhost:8080/urls/${req.params.id}`);
+});
+
+// sets a cookie named 'username'
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect("/urls");
+});
+
+// deletes the cookie named 'username'
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
+  res.redirect("/urls");
 });
 
 // creates the server at the given port on the localhost
