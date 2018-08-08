@@ -1,0 +1,34 @@
+<!-- urls_show.ejs: renders a page that includes a form with an email and password field -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp</title>
+</head>
+<body>
+  <header>
+    <% include partials/_header %>
+  </header>
+  <h1> Register User:</h1>
+  <form method="POST" action="/register">
+    <table>
+    <tr>
+      <td>
+        email:
+      </td>
+      <td>
+        <input type="email" value="" name="email" size="45px"/>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        password:
+      </td>
+      <td>
+       <input type="password" value="" name="password" size="45px"/>
+      </td>
+    </tr>
+    </table>
+    <input type="submit" value="Submit">
+  </form>
+</body>
+</html>

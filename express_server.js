@@ -22,6 +22,19 @@ function generateRandomString() {
   return output;
 }
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 // temporary object representing a database
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -78,6 +91,32 @@ app.get("/u/:shortURL", (req, res) => {
   // TODO error check to see if URL contains protocol
   res.statusCode = 301;
   res.redirect(longURL);
+});
+
+// returns a page that includes a form with an email 
+// and password field
+app.get("/register", (req, res) => {
+  let templateVars = { 
+    shortURL: req.params.id,
+    longURL: urlDatabase[[req.params.id]],
+    username: req.cookies["username"]
+  };
+  res.render('register', templateVars);
+});
+
+// adds a new user object in the global users 
+// object which keeps track of the newly 
+// registered user's email, password and user ID
+app.post("/register", (req, res) => {
+  let userID = generateRandomString();
+  let user = {
+    id: userID,
+    email: req.body.email,
+    password: req.body.password
+  };
+  users[userID] = user;
+  res.cookie('userID', userID);
+  res.redirect(`http://localhost:8080/urls`);
 });
 
 // creates a short URL, adds it to the database
