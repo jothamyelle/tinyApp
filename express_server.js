@@ -1,10 +1,12 @@
 // import the goods (express) and set important variables
 var express = require("express");
 var app = express(); // store the express app in a variable for convenience
+var cookieParser = require('cookie-parser');
 var PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 /*****************************************************
 * generateRandomString: generates a random string from
