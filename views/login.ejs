@@ -8,6 +8,7 @@
       <header>
         <% include partials/_header %>
       </header><% if(!user || user && user.id === undefined) { %>
+      <h3> Enter Email and Password to Login:</h3>
         <form method="POST" action="/login">
           <table>
           <tr>

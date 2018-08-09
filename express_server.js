@@ -83,6 +83,17 @@ app.get("/urls", (req, res) => {
 
 // renders the new url form page
 app.get("/urls/new", (req, res) => {
+  let user;
+  if(req.cookies["userID"] !== undefined) {
+    for (checkUser in users) {
+      if (users[req.cookies["userID"]].userID === users[checkUser].userID) {
+        user = req.cookies["userID"];
+      }
+    }
+  }
+  if (!user) {
+    res.redirect("/login");
+  }
   let templateVars = { 
     user: users[req.cookies["userID"]] 
   };
