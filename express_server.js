@@ -1,5 +1,6 @@
 // import the goods (express) and set important variables
 var express = require("express");
+const bcrypt = require('bcrypt');
 var app = express(); // store the express app in a variable for convenience
 var cookieParser = require('cookie-parser');
 var PORT = 8080; // default port 8080
@@ -170,8 +171,6 @@ app.get("/u/:shortURL", (req, res) => {
 // and password field
 app.get("/register", (req, res) => {
   let templateVars = { 
-    shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL,
     user: req.cookies["userID"]
   };
   res.render('register', templateVars);
@@ -182,11 +181,13 @@ app.get("/register", (req, res) => {
 // registered user's email, password and user ID
 app.post("/register", (req, res) => {
   let userID = generateRandomString();
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
   let user = {
     id: userID,
     email: req.body.email,
-    password: req.body.password
+    password: hashedPassword
   };
+  console.log("hashed password: ", user.password);
   if (user.email === "" || user.password === "") {
     res.statusCode = 400;
     res.send(res.statusCode + ": Email or Password field left blank.");
