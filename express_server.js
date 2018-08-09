@@ -42,8 +42,16 @@ const users = {
 
 // temporary object representing a database
 var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    userID: 'jotham',
+    shortURL: "b2xVn2",
+    longURL: "http://www.lighthouselabs.ca"
+  },
+  "9sm5xK": {
+    userID: 'userRandomID',
+    shortURL: "9sm5xK",
+    longURL: "http://www.google.com"
+  }
 };
 
 // listening for/handling routes
@@ -57,7 +65,7 @@ app.get("/", (req, res) => {
 app.get("/login", (req, res) => {
   let templateVars = { 
     shortURL: req.params.id,
-    longURL: urlDatabase[[req.params.id]],
+    longURL: urlDatabase[[req.params.id]].longURL,
     user: users[req.cookies["userID"]]
   };
   res.render('login', templateVars);
@@ -105,7 +113,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = { 
     shortURL: req.params.id,
-    longURL: urlDatabase[[req.params.id]],
+    longURL: urlDatabase[req.params.id].longURL,
     user: users[req.cookies["userID"]]
   };
   res.render("urls_show", templateVars);
@@ -114,7 +122,7 @@ app.get("/urls/:id", (req, res) => {
 // take the short url and redirects the user to the long
 // url it corresponds to in the database
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL].longURL;
   // TODO error check to see if URL contains protocol
   res.statusCode = 301;
   res.redirect(longURL);
@@ -125,7 +133,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/register", (req, res) => {
   let templateVars = { 
     shortURL: req.params.id,
-    longURL: urlDatabase[[req.params.id]],
+    longURL: urlDatabase[req.params.id].longURL,
     user: req.cookies["userID"]
   };
   res.render('register', templateVars);
@@ -162,7 +170,13 @@ app.post("/register", (req, res) => {
 // with the corresponding long url as the value
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  let newURLEntry = {
+    userID: req.cookies["userID"],
+    shortURL: shortURL,
+    longURL: req.body.longURL
+  };
+  urlDatabase[shortURL] = newURLEntry;
+  console.log(urlDatabase);
   res.statusCode = 303;
   res.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
@@ -176,7 +190,9 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // updates the long url of the specified short url
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURL;
+  if (urlDatabase[req.cookies["userID"]]) {
+    urlDatabase[req.cookies["userID"]][req.params.id] = req.body.longURL;
+  }
   res.redirect(`http://localhost:8080/urls`);
 });
 
