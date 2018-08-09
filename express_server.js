@@ -176,7 +176,6 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL
   };
   urlDatabase[shortURL] = newURLEntry;
-  console.log(urlDatabase);
   res.statusCode = 303;
   res.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
