@@ -22,6 +22,16 @@ function generateRandomString() {
   return output;
 }
 
+function urlsForUser(id) {
+  let URLs = {};
+  for (url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      URLs[url] = urlDatabase[url];
+    }
+  }
+  return URLs;
+}
+
 const users = { 
   "userRandomID": {
     id: "userRandomID", 
@@ -42,8 +52,16 @@ const users = {
 
 // temporary object representing a database
 var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    userID: 'jotham',
+    shortURL: "b2xVn2",
+    longURL: "http://www.lighthouselabs.ca"
+  },
+  "9sm5xK": {
+    userID: 'userRandomID',
+    shortURL: "9sm5xK",
+    longURL: "http://www.google.com"
+  }
 };
 
 // listening for/handling routes
@@ -56,8 +74,6 @@ app.get("/", (req, res) => {
 // for an email and password
 app.get("/login", (req, res) => {
   let templateVars = { 
-    shortURL: req.params.id,
-    longURL: urlDatabase[[req.params.id]],
     user: users[req.cookies["userID"]]
   };
   res.render('login', templateVars);
@@ -72,17 +88,35 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  // passes in the entire object, that contains
-  // the whole database object as the key value
-  let templateVars = { 
-    urls: urlDatabase,
-    user: users[req.cookies["userID"]] 
-  };
-  res.render("urls_index", templateVars);
+  // check if the user is logged in, if they're not, then tell them to login or register
+  if (req.cookies["userID"]) {
+    // passes in the entire object, that contains
+    // the whole database object as the key value
+    let URLs = urlsForUser(req.cookies["userID"]);
+    let templateVars = { 
+      urls: URLs,
+      user: users[req.cookies["userID"]] 
+    };
+    res.render("urls_index", templateVars);
+  } else {
+    res.statusCode = 401;
+    res.send(res.statusCode + ": You must be logged in to view urls.  Please <a href='/login'>Login</a> or <a href='/register'>Register</a>.");
+  }
 });
 
 // renders the new url form page
 app.get("/urls/new", (req, res) => {
+  let user;
+  if(req.cookies["userID"] !== undefined) {
+    for (checkUser in users) {
+      if (users[req.cookies["userID"]].userID === users[checkUser].userID) {
+        user = req.cookies["userID"];
+      }
+    }
+  }
+  if (!user) {
+    res.redirect("/login");
+  }
   let templateVars = { 
     user: users[req.cookies["userID"]] 
   };
@@ -92,18 +126,41 @@ app.get("/urls/new", (req, res) => {
 // renders the page that shows the short and long 
 // url according to the short url given in the path
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { 
-    shortURL: req.params.id,
-    longURL: urlDatabase[[req.params.id]],
-    user: users[req.cookies["userID"]]
-  };
-  res.render("urls_show", templateVars);
+  // if a user is logged in
+  if (req.cookies["userID"]) {
+    let URLs = urlsForUser(req.cookies["userID"]);
+    // if the object of the id-specific url objects contains 
+    // the current user's id, show them the url
+    let userCanViewURLs = false;
+    // loop through each url for the logged in user
+    for (url in URLs) {
+      // if the short URL requested is within their list of URLs
+      // then they can have access to view the urls
+      if (URLs[url].shortURL === req.params.id) {
+        userCanViewURLs = true;
+      }
+      if (userCanViewURLs) {
+        let templateVars = { 
+          shortURL: req.params.id,
+          longURL: urlDatabase[req.params.id].longURL,
+          user: users[req.cookies["userID"]]
+        };
+        res.render("urls_show", templateVars);
+      } else {
+        res.statusCode = 401;
+        res.send(res.statusCode + ": You don't have access to view this url. Return to <a href='/urls'>Home</a>.");
+      }
+    }
+  } else {
+    res.statusCode = 401;
+    res.send(res.statusCode + ": You must be logged in to view urls.  Please <a href='/login'>Login</a> or <a href='/register'>Register</a>.");
+  }
 });
 
 // take the short url and redirects the user to the long
 // url it corresponds to in the database
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL].longURL;
   // TODO error check to see if URL contains protocol
   res.statusCode = 301;
   res.redirect(longURL);
@@ -114,7 +171,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/register", (req, res) => {
   let templateVars = { 
     shortURL: req.params.id,
-    longURL: urlDatabase[[req.params.id]],
+    longURL: urlDatabase[req.params.id].longURL,
     user: req.cookies["userID"]
   };
   res.render('register', templateVars);
@@ -151,7 +208,12 @@ app.post("/register", (req, res) => {
 // with the corresponding long url as the value
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  let newURLEntry = {
+    userID: req.cookies["userID"],
+    shortURL: shortURL,
+    longURL: req.body.longURL
+  };
+  urlDatabase[shortURL] = newURLEntry;
   res.statusCode = 303;
   res.redirect(`http://localhost:8080/urls/${shortURL}`);
 });
@@ -165,13 +227,20 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // updates the long url of the specified short url
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURL;
+  if (urlDatabase[req.cookies["userID"]]) {
+    urlDatabase[req.cookies["userID"]][req.params.id] = req.body.longURL;
+  }
   res.redirect(`http://localhost:8080/urls`);
 });
 
 // links to the update page with the correct short url
 app.post("/urls/:id/update", (req, res) => {
-  res.redirect(`http://localhost:8080/urls/${req.params.id}`);
+  if (urlDatabase[req.params.id].userID === req.cookies["userID"]) {
+    res.redirect(`http://localhost:8080/urls/${req.params.id}`);
+  } else {
+    res.statusCode = 401;
+    res.send(res.statusCode + `: You cannot edit a link that you didn't add.  Please return to <a href="/urls">Index Page</a>`);
+  }
 });
 
 // sets a cookie named 'userid'
