@@ -207,7 +207,7 @@ app.post("/register", (req, res) => {
 
 // creates a short URL, adds it to the database
 // with the corresponding long url as the value
-app.post("/urls", (req, res, next) => {
+app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   let newURLEntry = {
     userID: req.cookies["userID"],
