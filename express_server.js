@@ -130,6 +130,7 @@ app.get("/urls/:id", (req, res) => {
   // if a user is logged in
   if (req.cookies["userID"]) {
     let URLs = urlsForUser(req.cookies["userID"]);
+
     // if the object of the id-specific url objects contains 
     // the current user's id, show them the url
     let userCanViewURLs = false;
@@ -140,17 +141,17 @@ app.get("/urls/:id", (req, res) => {
       if (URLs[url].shortURL === req.params.id) {
         userCanViewURLs = true;
       }
-      if (userCanViewURLs) {
-        let templateVars = { 
-          shortURL: req.params.id,
-          longURL: urlDatabase[req.params.id].longURL,
-          user: users[req.cookies["userID"]]
-        };
-        res.render("urls_show", templateVars);
-      } else {
-        res.statusCode = 401;
-        res.send(res.statusCode + ": You don't have access to view this url. Return to <a href='/urls'>Home</a>.");
-      }
+    }
+    if (userCanViewURLs) {
+      let templateVars = { 
+        shortURL: req.params.id,
+        longURL: urlDatabase[req.params.id].longURL,
+        user: users[req.cookies["userID"]]
+      };
+      res.render("urls_show", templateVars);
+    } else {
+      res.statusCode = 401;
+      res.send(res.statusCode + ": You don't have access to view this url. Return to <a href='/urls'>Home</a>.");
     }
   } else {
     res.statusCode = 401;
