@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>TinyApp</title>
+  </head>
+  <body>
+    <div style="max-width:30%;margin-left:auto;margin-right:auto;text-align:center;">
+      <header>
+        <% include partials/_header %>
+      </header><% if(!user || user && user.id === undefined) { %>
+        <form method="POST" action="/login">
+          <table>
+          <tr>
+            <td>
+              email:
+            </td>
+            <td>
+              <input type="email" value="" name="email" size="45px"/>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              password:
+            </td>
+            <td>
+            <input type="password" value="" name="password" size="45px"/>
+            </td>
+          </tr>
+          </table>
+          <input type="submit" value="Login" style="margin-top:10px;">
+        </form>
+      <% } else { %>
+        <h2>You're logged in as <%= user.id %></h2>
+        <form method="POST" action="/logout">
+          <input type="submit" value="Logout">
+        </form>
+      <% } %>
+    </div>
+  </body>
+</html>

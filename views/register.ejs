@@ -5,30 +5,32 @@
   <title>TinyApp</title>
 </head>
 <body>
-  <header>
-    <% include partials/_header %>
-  </header>
-  <h1> Register User:</h1>
-  <form method="POST" action="/register">
-    <table>
-    <tr>
-      <td>
-        email:
-      </td>
-      <td>
-        <input type="email" value="" name="email" size="45px"/>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        password:
-      </td>
-      <td>
-       <input type="password" value="" name="password" size="45px"/>
-      </td>
-    </tr>
-    </table>
-    <input type="submit" value="Submit">
-  </form>
+  <div style="max-width:30%;margin-left:auto;margin-right:auto;text-align:center;">
+    <header>
+      <% include partials/_header %>
+    </header>
+    <h1> Register User:</h1>
+    <form method="POST" action="/register">
+      <table>
+      <tr>
+        <td>
+          email:
+        </td>
+        <td>
+          <input type="email" value="" name="email" size="45px"/>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          password:
+        </td>
+        <td>
+        <input type="password" value="" name="password" size="45px"/>
+        </td>
+      </tr>
+      </table>
+      <input type="submit" value="Submit">
+    </form>
+  </div>
 </body>
 </html>

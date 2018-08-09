@@ -5,20 +5,22 @@
   <title>TinyApp</title>
 </head>
 <body>
-  <header>
-    <% include partials/_header %>
-  </header>
-    <ul style="list-style-type: none;">
-      <% for (let url in urls) { %>
-      <li style="margin-bottom:20px;">
-        <form method="POST">
-          <%- url %> &rarr; <%- urls[url] %> 
-          <input formaction="/urls/<%- url %>/update" type="submit" value="Edit" style="border-radius:20px;cursor:pointer;color:blue;"/>
-          <input formaction="/urls/<%- url %>/delete" type="submit" value="Delete" style="border-radius:20px;cursor:pointer;color:red;"/>
-        </form>
-      </li>
-      <% } %>
-    </ul>
-    <button style="border-radius:20px;"><a href="/urls/new" style="text-decoration:none;color:black;">Shorten a New Link</a></button>
+  <div style="max-width:30%;margin-left:auto;margin-right:auto;text-align:center;">
+    <header>
+      <% include partials/_header %>
+    </header>
+      <ul style="list-style-type: none;">
+        <% for (let url in urls) { %>
+        <li style="margin-bottom:20px;">
+          <form method="POST">
+            <%- url %> &rarr; <%- urls[url] %> 
+            <input formaction="/urls/<%- url %>/update" type="submit" value="Edit" style="border-radius:20px;cursor:pointer;color:blue;"/>
+            <input formaction="/urls/<%- url %>/delete" type="submit" value="Delete" style="border-radius:20px;cursor:pointer;color:red;"/>
+          </form>
+        </li>
+        <% } %>
+      </ul>
+      <button style="border-radius:20px;"><a href="/urls/new" style="text-decoration:none;color:black;">Shorten a New Link</a></button>
+    </div>
   </body>
 </html>

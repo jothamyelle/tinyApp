@@ -5,13 +5,15 @@
   <title>TinyApp</title>
 </head>
 <body>
-  <header>
-    <% include partials/_header %>
-  </header>
-  <h1> Short URL: <%- shortURL %></h1>
-  <form method="POST" action="/urls/<%- shortURL %>">
-    <input type="text" value="<%- longURL %>" name="longURL" size="45px"/>
-    <input type="submit" value="Update">
-  </form>
+  <div style="max-width:30%;margin-left:auto;margin-right:auto;text-align:center;">
+    <header>
+      <% include partials/_header %>
+    </header>
+    <h1> Short URL: <%- shortURL %></h1>
+    <form method="POST" action="/urls/<%- shortURL %>">
+      <input type="text" value="<%- longURL %>" name="longURL" size="45px"/>
+      <input type="submit" value="Update">
+    </form>
+  </div>
 </body>
 </html>

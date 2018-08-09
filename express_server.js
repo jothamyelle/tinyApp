@@ -32,7 +32,12 @@ const users = {
     id: "user2RandomID", 
     email: "user2@example.com", 
     password: "dishwasher-funk"
-  }
+  },
+  "jotham": {
+     id: "jotham", 
+     email: "jotham@hotmail.com", 
+     password: "seven"
+   }
 }
 
 // temporary object representing a database
@@ -45,6 +50,17 @@ var urlDatabase = {
 app.get("/", (req, res) => {
   // root greeting message
   res.end("Hello!");
+});
+
+// returns a new login page that asks 
+// for an email and password
+app.get("/login", (req, res) => {
+  let templateVars = { 
+    shortURL: req.params.id,
+    longURL: urlDatabase[[req.params.id]],
+    user: users[req.cookies["userID"]]
+  };
+  res.render('login', templateVars);
 });
 
 app.get("/urls.json", (req, res) => {
@@ -60,7 +76,7 @@ app.get("/urls", (req, res) => {
   // the whole database object as the key value
   let templateVars = { 
     urls: urlDatabase,
-    username: req.cookies["username"] 
+    user: users[req.cookies["userID"]] 
   };
   res.render("urls_index", templateVars);
 });
@@ -68,7 +84,7 @@ app.get("/urls", (req, res) => {
 // renders the new url form page
 app.get("/urls/new", (req, res) => {
   let templateVars = { 
-    username: req.cookies["username"] 
+    user: users[req.cookies["userID"]] 
   };
   res.render("urls_new", templateVars);
 });
@@ -79,7 +95,7 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = { 
     shortURL: req.params.id,
     longURL: urlDatabase[[req.params.id]],
-    username: req.cookies["username"]
+    user: users[req.cookies["userID"]]
   };
   res.render("urls_show", templateVars);
 });
@@ -99,7 +115,7 @@ app.get("/register", (req, res) => {
   let templateVars = { 
     shortURL: req.params.id,
     longURL: urlDatabase[[req.params.id]],
-    username: req.cookies["username"]
+    user: req.cookies["userID"]
   };
   res.render('register', templateVars);
 });
@@ -116,7 +132,7 @@ app.post("/register", (req, res) => {
   };
   if (user.email === "" || user.password === "") {
     res.statusCode = 400;
-    res.send(res.statusCode + ": Username or Password field left blank.");
+    res.send(res.statusCode + ": Email or Password field left blank.");
     return;
   }
   for (checkUser in users) {
@@ -158,15 +174,33 @@ app.post("/urls/:id/update", (req, res) => {
   res.redirect(`http://localhost:8080/urls/${req.params.id}`);
 });
 
-// sets a cookie named 'username'
+// sets a cookie named 'userid'
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  // if the provided email and password match one of the objects in the users object
+  let user;
+  for (checkUser in users) {
+    if (req.body.email === users[checkUser].email) {
+      if (req.body.password === users[checkUser].password) {
+        user = users[checkUser].id;
+        break;
+      }
+      res.statusCode = 404;
+      res.send(res.statusCode + ": Wrong password, homie.  Click <a href='/login'>here</a> to try again.");
+    }
+  }
+  if (user !== undefined) {
+    // set the cookie to be equal to that user's id
+    res.cookie('userID', user);
+  } else {
+    res.statusCode = 404;
+    res.send(res.statusCode + ": Sorry, dude.  Your login info is not in our database.  Click <a href='/register'>here</a> to register.");
+  }
   res.redirect("/urls");
 });
 
-// deletes the cookie named 'username'
+// deletes the cookie named 'userID'
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('userID');
   res.redirect("/urls");
 });
 
