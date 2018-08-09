@@ -197,7 +197,12 @@ app.post("/urls/:id", (req, res) => {
 
 // links to the update page with the correct short url
 app.post("/urls/:id/update", (req, res) => {
-  res.redirect(`http://localhost:8080/urls/${req.params.id}`);
+  if (urlDatabase[req.params.id].userID === req.cookies["userID"]) {
+    res.redirect(`http://localhost:8080/urls/${req.params.id}`);
+  } else {
+    res.statusCode = 401;
+    res.send(res.statusCode + `: You cannot edit a link that you didn't add.  Please return to <a href="/urls">Index Page</a>`);
+  }
 });
 
 // sets a cookie named 'userid'
