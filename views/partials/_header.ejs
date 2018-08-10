@@ -1,12 +1,22 @@
 <div style="border:solid black 1px;border-radius:30px;box-shadow:3px 3px 5px;background-color:#f7fff2;">
   <h1>TinyApp</h1>
-  <% if(!session || !session.email || session.email === undefined) { %>
-    <button style="border-radius:20px;margin-bottom:10px;"><a href="/register" style="text-decoration:none;cursor:pointer;color:purple;"/>Register</a></button><br>
-    <button style="border-radius:20px;margin-bottom:10px;"><a href="/login" style="text-decoration:none;cursor:pointer;color:green;"/>Login</a></button>
+  <% if(!user || !user.email || user.email === undefined) { %>
+    <% if(req.originalUrl !== "/register") { %>
+      <button style="border-radius:20px;margin-bottom:10px;"><a href="/register" style="text-decoration:none;cursor:pointer;color:purple;"/>Register</a></button><br>
+    <% } %>  
+    <% if(req.originalUrl !== "/login") { %>
+      <button style="border-radius:20px;margin-bottom:10px;"><a href="/login" style="text-decoration:none;cursor:pointer;color:green;"/>Login</a></button>
+    <% } %>
+    <% if (session.errMessage) { %>
+      <h3 style="color: red;"><%= session.errMessage %></h3>
+    <% } %>
   <% } else { %>
     <form method="POST" action="/logout">
-      <h3><%= session.email %></h3>
+      <h3><%= user.email %></h3>
       <button type="submit" style="cursor:pointer;border-radius:20px;margin-bottom:10px;color:red;">Logout</button>
     </form>
+    <% if (session.errMessage) { %>
+      <h3 style="color: red;"><%= session.errMessage %></h3>
+    <% } %>
   <% } %>
  <div>

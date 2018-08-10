@@ -6,7 +6,6 @@ var PORT = 8080;
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
-// TODO - Make this routes thing work...
 const routes = require("./views/routes");
 
 app.use(cookieSession({

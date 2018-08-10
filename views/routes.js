@@ -17,7 +17,9 @@ router.get("/", (req, res) => {
 // for an email and password
 router.get("/login", (req, res) => {
   let templateVars = { 
-    session: databases.users[req.session.userID]
+    user: req.session.userID,
+    session: req.session,
+    req: req
   };
   res.render('login', templateVars);
 });
@@ -38,12 +40,15 @@ router.get("/urls", (req, res) => {
     let URLs = functions.urlsForUser(req.session.userID);
     let templateVars = { 
       urls: URLs,
-      session: databases.users[req.session.userID] 
+      user: databases.users[req.session.userID],
+      session: req.session, 
+      req: req
     };
+    req.session.errMessage = "";
     res.render("urls_index", templateVars);
   } else {
-    res.statusCode = 401;
-    res.send(res.statusCode + ": You must be logged in to view urls.  Please <a href='/login'>Login</a> or <a href='/register'>Register</a>.");
+    req.session.errMessage = "You must be logged in to view urls.";
+    return res.redirect('/login');
   }
 });
 
@@ -61,7 +66,9 @@ router.get("/urls/new", (req, res) => {
     res.redirect("/login");
   }
   let templateVars = { 
-    session: user 
+    user: user ,
+    session: req.session,
+    req: req
   };
   res.render("urls_new", templateVars);
 });
@@ -88,16 +95,20 @@ router.get("/urls/:id", (req, res) => {
       let templateVars = { 
         shortURL: req.params.id,
         longURL: databases.urlDatabase[req.params.id].longURL,
-        session: databases.users[req.session.userID]
+        user: databases.users[req.session.userID],
+        session: req.session,
+        req: req
       };
       res.render("urls_show", templateVars);
     } else {
-      res.statusCode = 401;
-      res.send(res.statusCode + ": You don't have access to view this url. Return to <a href='/urls'>Home</a>.");
+      req.session.errMessage = "You don't have access to view this url.";
+      return res.redirect('/urls');
+      // res.statusCode = 401;
+      // res.send(res.statusCode + ": You don't have access to view this url. Return to <a href='/urls'>Home</a>.");
     }
   } else {
-    res.statusCode = 401;
-    res.send(res.statusCode + ": You must be logged in to view urls.  Please <a href='/login'>Login</a> or <a href='/register'>Register</a>.");
+    req.session.errMessage = "You must be logged in to view urls.";
+    return res.redirect('/login');
   }
 });
 
@@ -114,7 +125,9 @@ router.get("/u/:shortURL", (req, res) => {
 // and password field
 router.get("/register", (req, res) => {
   let templateVars = { 
-    session: databases.users[req.session.userID]
+    user: databases.users[req.session.userID],
+    session: req.session,
+    req: req
   };
   res.render('register', templateVars);
 });
@@ -130,9 +143,9 @@ router.post("/register", (req, res) => {
     email: req.body.email,
     password: hashedPassword
   };
-  if (user.email === "" || user.password === "") {
-    res.statusCode = 400;
-    res.send(res.statusCode + ": Email or Password field left blank.");
+  if (req.body.email === "" || req.body.password === "") {
+    req.session.errMessage = "Email or Password field left blank. Please complete both fields.";
+    return res.redirect('/register');
     return;
   }
   for (checkUser in databases.users) {
@@ -144,7 +157,7 @@ router.post("/register", (req, res) => {
    }
    databases.users[userID] = user;
   // res.cookie('session', userID);
-    req.session.userID = user;
+  req.session.userID = userID;
   res.redirect(`http://localhost:8080/urls`);
 });
 
@@ -183,13 +196,12 @@ router.post("/urls/:id/update", (req, res) => {
   if (databases.urlDatabase[req.params.id].userID === req.session.userID) {
     res.redirect(`http://localhost:8080/urls/${req.params.id}`);
   } else {
-    res.statusCode = 401;
-    res.send(res.statusCode + `: You cannot edit a link that you didn't add.  Please return to <a href="/urls">Index Page</a>`);
+    req.session.errMessage = "You cannot edit a link that you didn't add.";
+    return res.redirect('/urls');
   }
 });
 
-// sets a cookie named 'userid'
-router.post("/login", (req, res) => {
+router.post("/login", (req, res, next) => {
   // if the provided email and password match one of the objects in the users object
   let user;
   for (checkUser in databases.users) {
@@ -198,14 +210,13 @@ router.post("/login", (req, res) => {
         user = databases.users[checkUser].id;
         break;
       }
-      res.statusCode = 400;
-      res.send(res.statusCode + ": Wrong password, homie.  Click <a href='/login'>here</a> to try again.");
+      req.session.errMessage = "You've entered incorrect login information.  Please try again.";
+      return res.redirect('/login');
     }
   }
   if (user !== undefined) {
     // set the cookie to be equal to that user's id
     req.session.userID = user;
-    // res.cookie('userID', userID)
   } else {
     res.statusCode = 404;
     res.send(res.statusCode + ": Sorry, dude.  Your login info is not in our database.  Click <a href='/register'>here</a> to register.");
@@ -216,8 +227,7 @@ router.post("/login", (req, res) => {
 // deletes the cookie named 'userID'
 router.post("/logout", (req, res) => {
   req.session = null;
-  // res.clearCookie('userID');
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 module.exports = router;

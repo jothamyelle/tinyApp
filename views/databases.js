@@ -23,12 +23,14 @@ databases.urlDatabase = {
   "b2xVn2": {
     userID: 'jotham',
     shortURL: "b2xVn2",
-    longURL: "http://www.lighthouselabs.ca"
+    longURL: "http://www.lighthouselabs.ca",
+    dateCreated: new Date().toLocaleDateString("en-US")
   },
   "9sm5xK": {
     userID: 'userRandomID',
     shortURL: "9sm5xK",
-    longURL: "http://www.google.com"
+    longURL: "http://www.google.com",
+    dateCreated: new Date().toLocaleDateString("en-US")
   }
 };
 
