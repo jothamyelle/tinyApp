@@ -33,6 +33,7 @@ router.get("/hello", (req, res) => {
 });
 
 router.get("/urls", (req, res) => {
+  console.log(databases.urlDatabase);
   // check if the user is logged in, if they're not, then tell them to login or register
   if (req.session.userID) {
     // passes in the entire object, that contains
@@ -44,7 +45,6 @@ router.get("/urls", (req, res) => {
       session: req.session, 
       req: req
     };
-    req.session.errMessage = "";
     res.render("urls_index", templateVars);
   } else {
     req.session.errMessage = "You must be logged in to view urls.";
@@ -115,21 +115,54 @@ router.get("/urls/:id", (req, res) => {
 // take the short url and redirects the user to the long
 // url it corresponds to in the database
 router.get("/u/:shortURL", (req, res) => {
-  let longURL = databases.urlDatabase[req.params.shortURL].longURL;
-  // TODO error check to see if URL contains protocol
-  res.statusCode = 301;
-  res.redirect(longURL);
+  if (databases.urlDatabase[req.params.shortURL]) {
+    let longURL = databases.urlDatabase[req.params.shortURL].longURL;
+    if (!longURL.includes("http://")) {
+      if (!longURL.includes("www.")) {
+        let newURL = `http://www.${longURL}`;
+        res.statusCode = 301;
+        databases.urlDatabase[req.params.shortURL].numVisits++;
+        console.log("databases.urlDatabase[req.params.shortURL].uniqueVisits: ",databases.urlDatabase[req.params.shortURL].uniqueVisits);
+        if (databases.urlDatabase[req.params.shortURL].uniqueVisits.indexOf(req.session.userID) === -1) {
+          databases.urlDatabase[req.params.shortURL].uniqueVisits.push(req.session.userID);
+        }
+        res.redirect(newURL);
+      } else {
+        let newURL = `http://${longURL}`;
+        res.statusCode = 301;
+        if (databases.urlDatabase[req.params.shortURL].uniqueVisits.indexOf(req.session.userID) === -1) {
+          databases.urlDatabase[req.params.shortURL].uniqueVisits.push(req.session.userID);
+        }
+        databases.urlDatabase[req.params.shortURL].numVisits++;
+        res.redirect(newURL);
+      }
+    } else {
+      res.statusCode = 301;
+      if (databases.urlDatabase[req.params.shortURL].uniqueVisits.indexOf(req.session.userID) === -1) {
+        databases.urlDatabase[req.params.shortURL].uniqueVisits.push(req.session.userID);
+      }
+      databases.urlDatabase[req.params.shortURL].numVisits++;
+      res.redirect(longURL);
+    }
+  } else {
+    req.session.errMessage = "That URL doesn't exist in our records.";
+    return res.redirect('/urls');
+  }
 });
 
 // returns a page that includes a form with an email 
 // and password field
 router.get("/register", (req, res) => {
-  let templateVars = { 
-    user: databases.users[req.session.userID],
-    session: req.session,
-    req: req
-  };
-  res.render('register', templateVars);
+  if (!databases.users[req.session.userID]) {
+    let templateVars = { 
+      user: databases.users[req.session.userID],
+      session: req.session,
+      req: req
+    };
+    res.render('register', templateVars);
+  } else {
+    return res.redirect('/urls');
+  }
 });
 
 // adds a new user object in the global users 
@@ -146,7 +179,6 @@ router.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
     req.session.errMessage = "Email or Password field left blank. Please complete both fields.";
     return res.redirect('/register');
-    return;
   }
   for (checkUser in databases.users) {
     if (user.email === databases.users[checkUser].email) {
@@ -166,10 +198,12 @@ router.post("/register", (req, res) => {
 router.post("/urls", (req, res) => {
   let shortURL = functions.generateRandomString();
   let newURLEntry = {
-    // TODO fix this being undefined
     userID: req.session.userID,
     shortURL: shortURL,
-    longURL: req.body.longURL
+    longURL: req.body.longURL,
+    dateCreated: new Date().toLocaleDateString("en-US"),
+    numVisits: 0,
+    uniqueVisits: []
   };
   databases.urlDatabase[shortURL] = newURLEntry;
   res.statusCode = 303;
@@ -179,8 +213,13 @@ router.post("/urls", (req, res) => {
 // deletes a url based on the short url entered 
 // in the path, then redirects back to the urls page
 router.post("/urls/:id/delete", (req, res) => {
-  delete databases.urlDatabase[req.params.id];
-  res.redirect(`http://localhost:8080/urls`);
+  if (databases.urlDatabase[req.session.userID]) {
+    delete databases.urlDatabase[req.params.id];
+    res.redirect(`http://localhost:8080/urls`);
+  } else {
+    req.session.errMessage = "You don't have permission do delete this URL. You either don't have permission or your session has timed out";
+    return res.redirect('/login');
+  }
 });
 
 // updates the long url of the specified short url

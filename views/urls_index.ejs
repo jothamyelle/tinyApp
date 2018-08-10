@@ -15,7 +15,7 @@
           <% for (let url in urls) { %>
           <li style="margin-bottom:20px;">
             <form method="POST">
-              <%- url %> &rarr; <%- urls[url].longURL %> - (Created: <%- urls[url].dateCreated %>) 
+              <%- url %> &rarr; <%- urls[url].longURL %> - (Created: <%- urls[url].dateCreated %>, Visited <%-urls[url].numVisits %> times by <%- urls[url].uniqueVisits.length %> unique users) 
               <input formaction="/urls/<%- url %>/update" type="submit" value="Edit 📝" style="border-radius:20px;cursor:pointer;color:blue;"/>
               <input formaction="/urls/<%- url %>/delete" type="submit" value="Delete 🗑️" style="border-radius:20px;cursor:pointer;color:red;"/>
             </form>
