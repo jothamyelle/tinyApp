@@ -7,7 +7,7 @@
     <div style="max-width:30%;margin-left:auto;margin-right:auto;text-align:center;">
       <header>
         <% include partials/_header %>
-      </header><% if(!user || user && user.id === undefined) { %>
+      </header><% if(!session || session && session.id === undefined) { %>
       <h3> Enter Email and Password to Login:</h3>
         <form method="POST" action="/login">
           <table>
@@ -28,10 +28,13 @@
             </td>
           </tr>
           </table>
-          <input type="submit" value="Login" style="margin-top:10px;">
-        </form>
+          <br>
+          <br>
+          <input type="submit" value="Login" style="border-radius:20px;margin-left:20px;color:green;">
+          <button style="border-radius:20px;margin-left:20px;"><a href="/register" style="text-decoration:none;cursor:pointer;color:purple;"/>Register</a></button><br>
+          </form>
       <% } else { %>
-        <h2>You're logged in as <%= user.id %></h2>
+        <h2>You're logged in as <%= session.id %></h2>
         <form method="POST" action="/logout">
           <input type="submit" value="Logout">
         </form>

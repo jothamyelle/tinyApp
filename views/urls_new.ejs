@@ -1,10 +1,14 @@
 <!-- urls_new.ejs: renders a form used for submitting a new long url -->
 <!DOCTYPE html>
 <html lang="en">
-  <head></head>
+  <head>
+    <title>Tiny App</title>
+  </head>
   <body>
   <div style="max-width:30%;margin-left:auto;margin-right:auto;text-align:center;">
+    <header>
       <% include partials/_header %>
+    </header>
       <form action="/urls" method="POST">
         <p><strong>Enter a URL to Shorten:<strong><p> 
         <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px;">

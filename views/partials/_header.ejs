@@ -1,5 +1,5 @@
 <h1>TinyApp</h1>
-<% if(!user || user.email === undefined) { %>
+<% if(!session || !session.email || session.email === undefined) { %>
   <button style="border-radius:20px;margin-bottom:10px;"><a href="/register" style="text-decoration:none;cursor:pointer;color:purple;"/>Register</a></button><br>
   <button style="border-radius:20px;margin-bottom:10px;"><a href="/login" style="text-decoration:none;cursor:pointer;color:green;"/>Login</a></button>
 <% } else { %>
