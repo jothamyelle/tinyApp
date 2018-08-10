@@ -116,18 +116,13 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   let user;
   if(req.session.userID !== undefined) {
-    console.log("You made it into the if statement!", user);
     for (checkUser in users) {
-      console.log("req.session.userID: ", req.session.userID);
-      console.log("users[checkUser]: ", users[checkUser].id);
       if (req.session.userID === users[checkUser].id) {
         user = users[req.session.userID];
-        console.log("User: ", user);
       }
     }
   }
   if (!user) {
-    console.log("You are not logged in!", user);
     res.redirect("/login");
   }
   let templateVars = { 
@@ -215,7 +210,6 @@ app.post("/register", (req, res) => {
   users[userID] = user;
   // res.cookie('session', userID);
     req.session.userID = user;
-    console.log("req.session.userID: ", req.session.userID);
   res.redirect(`http://localhost:8080/urls`);
 });
 
@@ -242,8 +236,8 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // updates the long url of the specified short url
 app.post("/urls/:id", (req, res) => {
-  if (urlDatabase[req.session.userID]) {
-    urlDatabase[req.session.userID][req.params.id] = req.body.longURL;
+  if (urlDatabase[req.params.id]) {
+    urlDatabase[req.params.id].longURL = req.body.longURL;
   }
   res.redirect(`http://localhost:8080/urls`);
 });

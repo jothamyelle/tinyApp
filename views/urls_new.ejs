@@ -2,18 +2,20 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Tiny App</title>
+    <title>Tiny App - Shorten URL</title>
   </head>
   <body>
-  <div style="max-width:30%;margin-left:auto;margin-right:auto;text-align:center;">
-    <header>
-      <% include partials/_header %>
-    </header>
-      <form action="/urls" method="POST">
-        <p><strong>Enter a URL to Shorten:<strong><p> 
-        <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px;">
-        <input type="submit" value="Submit" style="margin-top:10px;"/>
-      </form>
+    <div style="max-width:30%;margin-left:auto;margin-right:auto;text-align:center;">
+      <header>
+        <% include partials/_header %>
+      </header>
+      <main style="margin-top:50px;border:solid black 1px;border-radius:30px;box-shadow:3px 3px 5px;background-color:#f7fff2;">
+        <form action="/urls" method="POST">
+          <p><strong>Enter a URL to Shorten:<strong><p> 
+          <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px;">
+          <input type="submit" value="Submit" style="margin-top:10px;"/>
+        </form>
+      </main>
     </div>
   </body>
 </html>

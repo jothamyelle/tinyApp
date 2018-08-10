@@ -2,18 +2,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>TinyApp</title>
+  <title>TinyApp - Update URL</title>
 </head>
 <body>
   <div style="max-width:30%;margin-left:auto;margin-right:auto;text-align:center;">
     <header>
       <% include partials/_header %>
     </header>
-    <h1> Short URL: <%- shortURL %></h1>
-    <form method="POST" action="/urls/<%- shortURL %>">
-      <input type="text" value="<%- longURL %>" name="longURL" size="45px"/>
-      <input type="submit" value="Update">
-    </form>
+    <main style="margin-top:50px;border:solid black 1px;border-radius:30px;box-shadow:3px 3px 5px;background-color:#f7fff2;">
+      <h1> Short URL: <%- shortURL %></h1>
+      <form method="POST" action="/urls/<%- shortURL %>">
+        <input type="text" value="<%- longURL %>" name="longURL" size="45px"/>
+        <input type="submit" value="Update" style="margin-bottom:15px;">
+      </form>
+    </main>
   </div>
 </body>
 </html>

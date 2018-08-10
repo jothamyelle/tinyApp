@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>TinyApp</title>
+    <title>TinyApp - Login</title>
   </head>
   <body>
     <div style="max-width:30%;margin-left:auto;margin-right:auto;text-align:center;">
       <header>
         <% include partials/_header %>
       </header><% if(!session || session && session.id === undefined) { %>
-      <h3> Enter Email and Password to Login:</h3>
+      <main style="margin-top:50px;border:solid black 1px;border-radius:30px;box-shadow:3px 3px 5px;background-color:#f7fff2;">
+        <h3> Enter Email and Password to Login:</h3>
         <form method="POST" action="/login">
           <table>
           <tr>
@@ -30,15 +31,15 @@
           </table>
           <br>
           <br>
-          <input type="submit" value="Login" style="border-radius:20px;margin-left:20px;color:green;">
-          <button style="border-radius:20px;margin-left:20px;"><a href="/register" style="text-decoration:none;cursor:pointer;color:purple;"/>Register</a></button><br>
+          <input type="submit" value="Submit" style="border-radius:20px;margin-left:20px;color:blue;">
           </form>
-      <% } else { %>
-        <h2>You're logged in as <%= session.id %></h2>
-        <form method="POST" action="/logout">
-          <input type="submit" value="Logout">
-        </form>
-      <% } %>
+      </main>
+        <% } else { %>
+        <main style="margin-top:50px;">
+          <h2>You're logged in as <%= session.email %></h2>
+          <button style="border-radius:20px;cursor:pointer;"><a href="/urls" style="text-decoration:none;color:blue;">Home</a></button>
+        </main>
+        <% } %>
     </div>
   </body>
 </html>
