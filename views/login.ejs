@@ -9,7 +9,7 @@
         <% include partials/_header %>
       </header><% if(!session || session && session.id === undefined) { %>
       <main style="margin-top:50px;border:solid black 1px;border-radius:30px;box-shadow:3px 3px 5px;background-color:#f7fff2;">
-        <h3> Enter Email and Password to Login:</h3>
+        <h2> Login</h2>
         <form method="POST" action="/login">
           <table>
           <tr>
@@ -31,7 +31,7 @@
           </table>
           <br>
           <br>
-          <input type="submit" value="Submit" style="border-radius:20px;margin-left:20px;color:blue;">
+          <input type="submit" value="Submit" style="border-radius:20px;margin-left:20px;color:blue;margin-bottom:15px;">
           </form>
       </main>
         <% } else { %>
