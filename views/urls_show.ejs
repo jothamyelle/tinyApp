@@ -17,19 +17,20 @@
       </form>
     </main>
     <footer style="position:fixed;height:100px;top:0;left:0;width:25%;">
+    <% if (URLDB[shortURL].visitors) { %>
     <h4>Visitors</h4>
     <table style="border:solid black 1px;border-collapse:collapse;">
     <tr>
       <th style="border:solid black 1px;">Visitor ID</th>
       <th style="border:solid black 1px;">Timestamp</th>
     </tr>
-      <!-- TODO loop through each timestamp and display it here -->
       <% URLDB[shortURL].visitors.forEach(visitor => { %>
         <tr>
           <td style="border:solid black 1px;"> <%- visitor.visitorID %></td>
           <td style="border:solid black 1px;"><%- visitor.timestamp %></td>
         </tr>
       <% }) %>
+    <% } %>
     </table>
     </footer>
   </div>
