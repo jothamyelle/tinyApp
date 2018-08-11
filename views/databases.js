@@ -26,7 +26,13 @@ databases.urlDatabase = {
     longURL: "http://www.lighthouselabs.ca",
     dateCreated: new Date().toLocaleDateString("en-US"),
     numVisits: 0,
-    uniqueVisits: []
+    uniqueVisits: [],
+    visitors: [
+      {
+        visitorID: "4hFt6Y",
+        timestamp: new Date()
+      }
+    ]
   },
   "9sm5xK": {
     userID: 'userRandomID',
@@ -34,7 +40,13 @@ databases.urlDatabase = {
     longURL: "http://www.google.com",
     dateCreated: new Date().toLocaleDateString("en-US"),
     numVisits: 0,
-    uniqueVisits: []
+    uniqueVisits: [],
+    visitors: [
+      {
+        visitorID: "89iYYq",
+        timestamp: Math.floor(Date.now() / 1000)
+      }
+    ]
   }
 };
 

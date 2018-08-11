@@ -7,6 +7,8 @@ app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 const routes = require("./views/routes");
+var methodOverride = require('method-override');
+app.use(methodOverride('_method'));
 
 app.use(cookieSession({
   name: 'session',

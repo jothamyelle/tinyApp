@@ -33,7 +33,6 @@ router.get("/hello", (req, res) => {
 });
 
 router.get("/urls", (req, res) => {
-  console.log(databases.urlDatabase);
   // check if the user is logged in, if they're not, then tell them to login or register
   if (req.session.userID) {
     // passes in the entire object, that contains
@@ -93,6 +92,7 @@ router.get("/urls/:id", (req, res) => {
     }
     if (userCanViewURLs) {
       let templateVars = { 
+        URLDB: databases.urlDatabase,
         shortURL: req.params.id,
         longURL: databases.urlDatabase[req.params.id].longURL,
         user: databases.users[req.session.userID],
@@ -115,6 +115,10 @@ router.get("/urls/:id", (req, res) => {
 // take the short url and redirects the user to the long
 // url it corresponds to in the database
 router.get("/u/:shortURL", (req, res) => {
+  let newVisitor = {
+    visitorID: functions.generateRandomString(),
+    timestamp: new Date()
+  };
   if (databases.urlDatabase[req.params.shortURL]) {
     let longURL = databases.urlDatabase[req.params.shortURL].longURL;
     if (!longURL.includes("http://")) {
@@ -122,7 +126,7 @@ router.get("/u/:shortURL", (req, res) => {
         let newURL = `http://www.${longURL}`;
         res.statusCode = 301;
         databases.urlDatabase[req.params.shortURL].numVisits++;
-        console.log("databases.urlDatabase[req.params.shortURL].uniqueVisits: ",databases.urlDatabase[req.params.shortURL].uniqueVisits);
+        databases.urlDatabase[req.params.shortURL].visitors.push(newVisitor);
         if (databases.urlDatabase[req.params.shortURL].uniqueVisits.indexOf(req.session.userID) === -1) {
           databases.urlDatabase[req.params.shortURL].uniqueVisits.push(req.session.userID);
         }
@@ -133,6 +137,7 @@ router.get("/u/:shortURL", (req, res) => {
         if (databases.urlDatabase[req.params.shortURL].uniqueVisits.indexOf(req.session.userID) === -1) {
           databases.urlDatabase[req.params.shortURL].uniqueVisits.push(req.session.userID);
         }
+        databases.urlDatabase[req.params.shortURL].visitors.push(newVisitor);
         databases.urlDatabase[req.params.shortURL].numVisits++;
         res.redirect(newURL);
       }
@@ -141,6 +146,7 @@ router.get("/u/:shortURL", (req, res) => {
       if (databases.urlDatabase[req.params.shortURL].uniqueVisits.indexOf(req.session.userID) === -1) {
         databases.urlDatabase[req.params.shortURL].uniqueVisits.push(req.session.userID);
       }
+      databases.urlDatabase[req.params.shortURL].visitors.push(newVisitor);
       databases.urlDatabase[req.params.shortURL].numVisits++;
       res.redirect(longURL);
     }
@@ -203,7 +209,8 @@ router.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     dateCreated: new Date().toLocaleDateString("en-US"),
     numVisits: 0,
-    uniqueVisits: []
+    uniqueVisits: [],
+    timestamp: Math.floor(Date.now() / 1000)
   };
   databases.urlDatabase[shortURL] = newURLEntry;
   res.statusCode = 303;
@@ -212,8 +219,8 @@ router.post("/urls", (req, res) => {
 
 // deletes a url based on the short url entered 
 // in the path, then redirects back to the urls page
-router.post("/urls/:id/delete", (req, res) => {
-  if (databases.urlDatabase[req.session.userID]) {
+router.delete("/urls/:id", (req, res) => {
+  if (databases.urlDatabase[req.params.id].userID == req.session.userID) {
     delete databases.urlDatabase[req.params.id];
     res.redirect(`http://localhost:8080/urls`);
   } else {
@@ -223,7 +230,7 @@ router.post("/urls/:id/delete", (req, res) => {
 });
 
 // updates the long url of the specified short url
-router.post("/urls/:id", (req, res) => {
+router.put("/urls/:id", (req, res) => {
   if (databases.urlDatabase[req.params.id]) {
     databases.urlDatabase[req.params.id].longURL = req.body.longURL;
   }
@@ -231,7 +238,7 @@ router.post("/urls/:id", (req, res) => {
 });
 
 // links to the update page with the correct short url
-router.post("/urls/:id/update", (req, res) => {
+router.post("/urls/:id", (req, res) => {
   if (databases.urlDatabase[req.params.id].userID === req.session.userID) {
     res.redirect(`http://localhost:8080/urls/${req.params.id}`);
   } else {

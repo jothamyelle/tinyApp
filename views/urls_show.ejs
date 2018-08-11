@@ -11,11 +11,27 @@
     </header>
     <main style="margin-top:50px;border:solid black 1px;border-radius:30px;box-shadow:3px 3px 5px;background-color:#f7fff2;">
       <h1> Short URL: <%- shortURL %></h1>
-      <form method="POST" action="/urls/<%- shortURL %>">
+      <form method="POST" action="/urls/<%- shortURL %>?_method=PUT">
         <input type="text" value="<%- longURL %>" name="longURL" size="45px"/>
         <input type="submit" value="Update" style="margin-bottom:15px;">
       </form>
     </main>
+    <footer style="position:fixed;height:100px;top:0;left:0;width:25%;">
+    <h4>Visitors</h4>
+    <table style="border:solid black 1px;border-collapse:collapse;">
+    <tr>
+      <th style="border:solid black 1px;">Visitor ID</th>
+      <th style="border:solid black 1px;">Timestamp</th>
+    </tr>
+      <!-- TODO loop through each timestamp and display it here -->
+      <% URLDB[shortURL].visitors.forEach(visitor => { %>
+        <tr>
+          <td style="border:solid black 1px;"> <%- visitor.visitorID %></td>
+          <td style="border:solid black 1px;"><%- visitor.timestamp %></td>
+        </tr>
+      <% }) %>
+    </table>
+    </footer>
   </div>
 </body>
 </html>
