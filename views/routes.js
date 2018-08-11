@@ -4,7 +4,6 @@ const bcrypt = require('bcrypt');
 const functions = require('./functions/functions');
 const databases = require('./databases');
 
-// listening for/handling routes
 router.get("/", (req, res) => {
   if(req.session.userID){
     res.redirect("/urls");
@@ -13,8 +12,8 @@ router.get("/", (req, res) => {
   }
 });
 
-// returns a new login page that asks 
-// for an email and password
+/* LOGIN */ 
+//GET
 router.get("/login", (req, res) => {
   let templateVars = { 
     user: req.session.userID,
@@ -23,24 +22,45 @@ router.get("/login", (req, res) => {
   };
   res.render('login', templateVars);
 });
-
-router.get("/urls.json", (req, res) => {
-  res.json(databases.urlDatabase);
+// POST
+router.post("/login", (req, res, next) => {
+  let user;
+  for (checkUser in databases.users) {
+    let userToCheckAgainst = databases.users[checkUser];
+    if (req.body.email === userToCheckAgainst.email) {
+      if (bcrypt.compareSync(req.body.password, userToCheckAgainst.password)) {
+        user = userToCheckAgainst.id;
+        break;
+      }
+      req.session.errMessage = "You've entered incorrect login information.  Please try again.";
+      return res.redirect('/login');
+    }
+  }
+  if (user !== undefined) {
+    req.session.userID = user;
+  } else {
+    req.session.errMessage = "Sorry, dude.  Your login info is not in our database.";
+    return res.redirect('/register');
+  }
+  res.redirect("/urls");
 });
 
-router.get("/hello", (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
+/* LOGOUT */
+router.post("/logout", (req, res) => {
+  req.session = null;
+  res.redirect("/login");
 });
 
+/* URLS HOMEPAGE */
+// GET
 router.get("/urls", (req, res) => {
   // check if the user is logged in, if they're not, then tell them to login or register
-  if (req.session.userID) {
-    // passes in the entire object, that contains
-    // the whole database object as the key value
-    let URLs = functions.urlsForUser(req.session.userID);
+  let userID = req.session.userID;
+  if (userID) {
+    let URLs = functions.urlsForUser(userID);
     let templateVars = { 
       urls: URLs,
-      user: databases.users[req.session.userID],
+      user: databases.users[userID],
       session: req.session, 
       req: req
     };
@@ -50,8 +70,25 @@ router.get("/urls", (req, res) => {
     return res.redirect('/login');
   }
 });
+// POST
+router.post("/urls", (req, res) => {
+  let shortURL = functions.generateRandomString();
+  let newURLEntry = {
+    userID: req.session.userID,
+    shortURL: shortURL,
+    longURL: req.body.longURL,
+    dateCreated: new Date().toLocaleDateString("en-US"),
+    numVisits: 0,
+    uniqueVisits: [],
+    timestamp: Math.floor(Date.now() / 1000),
+    visitors: []
+  };
+  databases.urlDatabase[shortURL] = newURLEntry;
+  res.statusCode = 303;
+  res.redirect(`http://localhost:8080/urls/${shortURL}`);
+});
 
-// renders the new url form page
+/* SHORTENED URLS */
 router.get("/urls/new", (req, res) => {
   let user;
   if(req.session.userID !== undefined) {
@@ -72,20 +109,13 @@ router.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-// renders the page that shows the short and long 
-// url according to the short url given in the path
+/* URLS EDIT PAGE */
+// GET
 router.get("/urls/:id", (req, res) => {
-  // if a user is logged in
   if (req.session.userID) {
     let URLs = functions.urlsForUser(req.session.userID);
-
-    // if the object of the id-specific url objects contains 
-    // the current user's id, show them the url
     let userCanViewURLs = false;
-    // loop through each url for the logged in user
     for (url in URLs) {
-      // if the short URL requested is within their list of URLs
-      // then they can have access to view the urls
       if (URLs[url].shortURL === req.params.id) {
         userCanViewURLs = true;
       }
@@ -103,51 +133,85 @@ router.get("/urls/:id", (req, res) => {
     } else {
       req.session.errMessage = "You don't have access to view this url.";
       return res.redirect('/urls');
-      // res.statusCode = 401;
-      // res.send(res.statusCode + ": You don't have access to view this url. Return to <a href='/urls'>Home</a>.");
     }
   } else {
     req.session.errMessage = "You must be logged in to view urls.";
     return res.redirect('/login');
   }
 });
+// POST
+router.post("/urls/:id", (req, res) => {
+  let urlUserId = databases.urlDatabase[req.params.id].userID;
+  if (urlUserId === req.session.userID) {
+    res.redirect(`http://localhost:8080/urls/${req.params.id}`);
+  } else {
+    req.session.errMessage = "You cannot edit a link that you didn't add.";
+    return res.redirect('/urls');
+  }
+});
+// PUT
+router.put("/urls/:id", (req, res) => {
+  let updatableURL = databases.urlDatabase[req.params.id];
+  if (updatableURL) {
+    updatableURL.longURL = req.body.longURL;
+  }
+  res.redirect(`http://localhost:8080/urls`);
+});
+// DELETE
+router.delete("/urls/:id", (req, res) => {
+  let urlToDelete = databases.urlDatabase[req.params.id];
+  if (urlToDelete.userID == req.session.userID) {
+    delete databases.urlDatabase[req.params.id];
+    res.redirect(`http://localhost:8080/urls`);
+  } else {
+    req.session.errMessage = "You don't have permission do delete this URL. You either don't have permission or your session has timed out";
+    return res.redirect('/login');
+  }
+});
+/* DELETE ERROR MESSAGE */
+router.delete("/error/:id", (req, res) => {
+    delete req.session.errMessage;
+    return res.redirect(`http://localhost:8080/${req.params.id}`);
+});
 
-// take the short url and redirects the user to the long
-// url it corresponds to in the database
+/* SHORT URL REDIRECT  & VISITOR INFO UPDATE*/
 router.get("/u/:shortURL", (req, res) => {
   let newVisitor = {
     visitorID: functions.generateRandomString(),
     timestamp: new Date()
   };
-  if (databases.urlDatabase[req.params.shortURL]) {
-    let longURL = databases.urlDatabase[req.params.shortURL].longURL;
+  let userID = req.session.userID;
+  let shortURL = databases.urlDatabase[req.params.shortURL];
+  if (shortURL) {
+    let uniqueVisitor = shortURL.uniqueVisits.indexOf(userID) === -1;
+    let longURL = shortURL.longURL;
     if (!longURL.includes("http://")) {
       if (!longURL.includes("www.")) {
         let newURL = `http://www.${longURL}`;
         res.statusCode = 301;
-        databases.urlDatabase[req.params.shortURL].numVisits++;
-        databases.urlDatabase[req.params.shortURL].visitors.push(newVisitor);
-        if (databases.urlDatabase[req.params.shortURL].uniqueVisits.indexOf(req.session.userID) === -1) {
-          databases.urlDatabase[req.params.shortURL].uniqueVisits.push(req.session.userID);
+        shortURL.numVisits++;
+        shortURL.visitors.push(newVisitor);
+        if (uniqueVisitor) {
+          shortURL.uniqueVisits.push(userID);
         }
         res.redirect(newURL);
       } else {
         let newURL = `http://${longURL}`;
         res.statusCode = 301;
-        if (databases.urlDatabase[req.params.shortURL].uniqueVisits.indexOf(req.session.userID) === -1) {
-          databases.urlDatabase[req.params.shortURL].uniqueVisits.push(req.session.userID);
+        if (uniqueVisitor) {
+          shortURL.uniqueVisits.push(userID);
         }
-        databases.urlDatabase[req.params.shortURL].visitors.push(newVisitor);
-        databases.urlDatabase[req.params.shortURL].numVisits++;
+        shortURL.visitors.push(newVisitor);
+        shortURL.numVisits++;
         res.redirect(newURL);
       }
     } else {
       res.statusCode = 301;
-      if (databases.urlDatabase[req.params.shortURL].uniqueVisits.indexOf(req.session.userID) === -1) {
-        databases.urlDatabase[req.params.shortURL].uniqueVisits.push(req.session.userID);
+      if (uniqueVisitor) {
+        shortURL.uniqueVisits.push(userID);
       }
-      databases.urlDatabase[req.params.shortURL].visitors.push(newVisitor);
-      databases.urlDatabase[req.params.shortURL].numVisits++;
+      shortURL.visitors.push(newVisitor);
+      shortURL.numVisits++;
       res.redirect(longURL);
     }
   } else {
@@ -156,10 +220,11 @@ router.get("/u/:shortURL", (req, res) => {
   }
 });
 
-// returns a page that includes a form with an email 
-// and password field
+/* REGISTER PAGE */
+// GET
 router.get("/register", (req, res) => {
-  if (!databases.users[req.session.userID]) {
+  let newUser = !databases.users[req.session.userID];
+  if (newUser) {
     let templateVars = { 
       user: databases.users[req.session.userID],
       session: req.session,
@@ -170,10 +235,7 @@ router.get("/register", (req, res) => {
     return res.redirect('/urls');
   }
 });
-
-// adds a new user object in the global users 
-// object which keeps track of the newly 
-// registered user's email, password and user ID
+// POST
 router.post("/register", (req, res) => {
   let userID = functions.generateRandomString();
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
@@ -188,92 +250,13 @@ router.post("/register", (req, res) => {
   }
   for (checkUser in databases.users) {
     if (user.email === databases.users[checkUser].email) {
-      res.statusCode = 400;
-      res.send(res.statusCode + ": Email already exists.");
-      return;
+      req.session.errMessage = "Email already exists.";
+      return res.redirect('/register');
     }
    }
    databases.users[userID] = user;
-  // res.cookie('session', userID);
   req.session.userID = userID;
   res.redirect(`http://localhost:8080/urls`);
-});
-
-// creates a short URL, adds it to the database
-// with the corresponding long url as the value
-router.post("/urls", (req, res) => {
-  let shortURL = functions.generateRandomString();
-  let newURLEntry = {
-    userID: req.session.userID,
-    shortURL: shortURL,
-    longURL: req.body.longURL,
-    dateCreated: new Date().toLocaleDateString("en-US"),
-    numVisits: 0,
-    uniqueVisits: [],
-    timestamp: Math.floor(Date.now() / 1000)
-  };
-  databases.urlDatabase[shortURL] = newURLEntry;
-  res.statusCode = 303;
-  res.redirect(`http://localhost:8080/urls/${shortURL}`);
-});
-
-// deletes a url based on the short url entered 
-// in the path, then redirects back to the urls page
-router.delete("/urls/:id", (req, res) => {
-  if (databases.urlDatabase[req.params.id].userID == req.session.userID) {
-    delete databases.urlDatabase[req.params.id];
-    res.redirect(`http://localhost:8080/urls`);
-  } else {
-    req.session.errMessage = "You don't have permission do delete this URL. You either don't have permission or your session has timed out";
-    return res.redirect('/login');
-  }
-});
-
-// updates the long url of the specified short url
-router.put("/urls/:id", (req, res) => {
-  if (databases.urlDatabase[req.params.id]) {
-    databases.urlDatabase[req.params.id].longURL = req.body.longURL;
-  }
-  res.redirect(`http://localhost:8080/urls`);
-});
-
-// links to the update page with the correct short url
-router.post("/urls/:id", (req, res) => {
-  if (databases.urlDatabase[req.params.id].userID === req.session.userID) {
-    res.redirect(`http://localhost:8080/urls/${req.params.id}`);
-  } else {
-    req.session.errMessage = "You cannot edit a link that you didn't add.";
-    return res.redirect('/urls');
-  }
-});
-
-router.post("/login", (req, res, next) => {
-  // if the provided email and password match one of the objects in the users object
-  let user;
-  for (checkUser in databases.users) {
-    if (req.body.email === databases.users[checkUser].email) {
-      if (bcrypt.compareSync(req.body.password, databases.users[checkUser].password)) {
-        user = databases.users[checkUser].id;
-        break;
-      }
-      req.session.errMessage = "You've entered incorrect login information.  Please try again.";
-      return res.redirect('/login');
-    }
-  }
-  if (user !== undefined) {
-    // set the cookie to be equal to that user's id
-    req.session.userID = user;
-  } else {
-    res.statusCode = 404;
-    res.send(res.statusCode + ": Sorry, dude.  Your login info is not in our database.  Click <a href='/register'>here</a> to register.");
-  }
-  res.redirect("/urls");
-});
-
-// deletes the cookie named 'userID'
-router.post("/logout", (req, res) => {
-  req.session = null;
-  res.redirect("/login");
 });
 
 module.exports = router;

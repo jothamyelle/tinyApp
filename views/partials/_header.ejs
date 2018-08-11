@@ -8,7 +8,9 @@
       <button style="border-radius:20px;margin-bottom:10px;"><a href="/login" style="text-decoration:none;cursor:pointer;color:green;"/>Login</a></button>
     <% } %>
     <% if (session.errMessage) { %>
-      <h3 style="color: red;"><%= session.errMessage %></h3>
+    <form method="POST" action="/error<%- req.originalUrl %>?_method=DELETE">
+      <p style="color:red;font-size:20px;"><%= session.errMessage %><input type="submit" style="border-radius:30px;"value="&times;"></p>
+      </form>
     <% } %>
   <% } else { %>
     <form method="POST" action="/logout">
@@ -16,7 +18,9 @@
       <button type="submit" style="cursor:pointer;border-radius:20px;margin-bottom:10px;color:red;">Logout</button>
     </form>
     <% if (session.errMessage) { %>
-      <h3 style="color: red;"><%= session.errMessage %></h3>
+    <form method="POST" action="/error<%- req.originalUrl %>?_method=DELETE">
+      <p style="color:red;font-size:20px;"><%= session.errMessage %><input type="submit" style="border-radius:30px;"value="&times;"></p>
+      </form>
     <% } %>
   <% } %>
  <div>
